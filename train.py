@@ -39,20 +39,21 @@ NUM_INPUT_FEATURES = (NUM_FEATURES_PER_FRAME + 1) * 4  # 1340
 class SingleMetricMLP(nn.Module):
     def __init__(self, input_dim=NUM_INPUT_FEATURES, hidden_dim=HIDDEN_DIM, dropout=DROPOUT):
         super().__init__()
-        self.net = nn.Sequential(
+        self.nonlinear = nn.Sequential(
             nn.Linear(input_dim, hidden_dim),
             nn.ReLU(),
             nn.Dropout(dropout),
             nn.Linear(hidden_dim, 1),
         )
+        self.shortcut = nn.Linear(input_dim, 1)
         # Xavier uniform init
-        for m in self.net:
+        for m in [*self.nonlinear, self.shortcut]:
             if isinstance(m, nn.Linear):
                 nn.init.xavier_uniform_(m.weight)
                 nn.init.zeros_(m.bias)
 
     def forward(self, x):
-        return self.net(x).squeeze(-1)
+        return (self.nonlinear(x) + self.shortcut(x)).squeeze(-1)
 
 # ---------------------------------------------------------------------------
 # Temporal aggregation
