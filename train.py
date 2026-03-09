@@ -19,7 +19,7 @@ from prepare import (
 # Hyperparameters
 # ---------------------------------------------------------------------------
 
-HIDDEN_DIM = 32
+HIDDEN_DIM = 48
 DROPOUT = 0.5
 LR = 1e-3
 WEIGHT_DECAY = 0.1
