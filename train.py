@@ -1,6 +1,6 @@
 """
 Deadlift form regression training script.
-Multi-seed ensemble of per-metric tiny MLPs.
+Best-k ensemble of per-metric tiny MLPs — train many, keep the best.
 Usage: uv run train.py
 """
 
@@ -27,7 +27,8 @@ MAX_EPOCHS = 5000
 PATIENCE = 1000
 EVAL_EVERY = 2
 BASE_SEED = 42
-NUM_SEEDS = 5  # ensemble size per metric
+NUM_SEEDS = 8   # train this many per metric
+TOP_K = 3       # keep best k by val loss for ensemble
 
 # ---------------------------------------------------------------------------
 # Model: one small MLP per metric
@@ -83,39 +84,42 @@ y_train = y_train.to(device)
 y_val = y_val.to(device)
 
 print(f"Aggregated features: {X_train_agg.shape[1]}")
-print(f"Ensemble size: {NUM_SEEDS} seeds per metric")
+print(f"Training {NUM_SEEDS} seeds per metric, keeping top {TOP_K}")
 
 # ---------------------------------------------------------------------------
-# Train ensemble of MLPs per metric
+# Train many seeds per metric, select best-k
 # ---------------------------------------------------------------------------
 
 t_start_training = time.time()
-all_models = []  # list of (metric_idx, model)
+all_models = []
 total_params = 0
 total_epochs = 0
 
 for metric_idx, metric_name in enumerate(METRIC_NAMES):
-    metric_models = []
+    candidates = []  # (val_loss, model_state)
 
     for seed_offset in range(NUM_SEEDS):
+        elapsed = time.time() - t_start_training
+        if elapsed >= TIME_BUDGET * 0.85:
+            break
+
         seed = BASE_SEED + metric_idx * 100 + seed_offset
         torch.manual_seed(seed)
 
         model = SingleMetricMLP().to(device)
-        if seed_offset == 0:
-            total_params += sum(p.numel() for p in model.parameters()) * NUM_SEEDS
+        if metric_idx == 0 and seed_offset == 0:
+            params_per_model = sum(p.numel() for p in model.parameters())
 
         optimizer = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
         criterion = nn.MSELoss()
 
         best_val_loss = float("inf")
-        best_epoch = 0
         best_state = None
         epochs_without_improvement = 0
 
         for epoch in range(1, MAX_EPOCHS + 1):
             elapsed = time.time() - t_start_training
-            if elapsed >= TIME_BUDGET * 0.9:
+            if elapsed >= TIME_BUDGET * 0.85:
                 break
 
             model.train()
@@ -133,7 +137,6 @@ for metric_idx, metric_name in enumerate(METRIC_NAMES):
 
                 if val_loss < best_val_loss:
                     best_val_loss = val_loss
-                    best_epoch = epoch
                     best_state = copy.deepcopy(model.state_dict())
                     epochs_without_improvement = 0
                 else:
@@ -145,14 +148,26 @@ for metric_idx, metric_name in enumerate(METRIC_NAMES):
             total_epochs += 1
 
         if best_state is not None:
-            model.load_state_dict(best_state)
-        metric_models.append(model)
+            candidates.append((best_val_loss, best_state))
+
+    # Select top-k by val loss
+    candidates.sort(key=lambda x: x[0])
+    top_k = candidates[:TOP_K]
+
+    metric_models = []
+    for val_loss, state in top_k:
+        m = SingleMetricMLP().to(device)
+        m.load_state_dict(state)
+        metric_models.append(m)
 
     all_models.append(metric_models)
-    print(f"  {metric_name:25s}: {NUM_SEEDS} seeds trained")
+    total_params += params_per_model * len(metric_models)
+    n_trained = len(candidates)
+    best_loss = top_k[0][0] if top_k else float('inf')
+    print(f"  {metric_name:25s}: trained {n_trained}/{NUM_SEEDS}, kept {len(top_k)}, best_val_mse={best_loss:.4f}")
 
 # ---------------------------------------------------------------------------
-# Final evaluation — average predictions across seeds
+# Final evaluation — average top-k predictions
 # ---------------------------------------------------------------------------
 
 t_end_training = time.time()
@@ -160,15 +175,18 @@ training_seconds = t_end_training - t_start_training
 
 val_preds_per_metric = []
 for metric_idx, metric_models in enumerate(all_models):
+    if not metric_models:
+        # Fallback: predict training mean
+        val_preds_per_metric.append(y_train[:, metric_idx].mean().expand(y_val.shape[0]))
+        continue
     seed_preds = []
     for model in metric_models:
         model.eval()
         with torch.no_grad():
             seed_preds.append(model(X_val_agg))
-    # Average across seeds
     val_preds_per_metric.append(torch.stack(seed_preds).mean(dim=0))
 
-val_pred = torch.stack(val_preds_per_metric, dim=1)  # (N_val, 11)
+val_pred = torch.stack(val_preds_per_metric, dim=1)
 val_rmse = evaluate_rmse(val_pred, y_val)
 
 print("\nPer-metric RMSE:")
