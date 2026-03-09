@@ -106,7 +106,7 @@ for metric_idx, metric_name in enumerate(METRIC_NAMES):
             total_params += sum(p.numel() for p in model.parameters()) * NUM_SEEDS
 
         optimizer = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
-        criterion = nn.HuberLoss(delta=1.0)
+        criterion = nn.MSELoss()
 
         best_val_loss = float("inf")
         best_epoch = 0
