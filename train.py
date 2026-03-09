@@ -34,7 +34,7 @@ TOP_K = 1       # keep best k by val loss for ensemble
 # Model: one small MLP per metric
 # ---------------------------------------------------------------------------
 
-NUM_INPUT_FEATURES = (NUM_FEATURES_PER_FRAME + 1) * 4  # 1340
+NUM_INPUT_FEATURES = (NUM_FEATURES_PER_FRAME + 1) * 5  # 1675 (mean/std/min/max/median)
 
 class SingleMetricMLP(nn.Module):
     def __init__(self, input_dim=NUM_INPUT_FEATURES, hidden_dim=HIDDEN_DIM, dropout=DROPOUT):
@@ -60,12 +60,13 @@ class SingleMetricMLP(nn.Module):
 # ---------------------------------------------------------------------------
 
 def aggregate(X):
-    """(N, 75, 335) -> (N, 1340) via mean/std/min/max across frames."""
+    """(N, 75, 335) -> (N, 1675) via mean/std/min/max/median across frames."""
     x_mean = X.mean(dim=1)
     x_std = X.std(dim=1)
     x_min = X.min(dim=1).values
     x_max = X.max(dim=1).values
-    return torch.cat([x_mean, x_std, x_min, x_max], dim=1)
+    x_median = X.median(dim=1).values
+    return torch.cat([x_mean, x_std, x_min, x_max, x_median], dim=1)
 
 # ---------------------------------------------------------------------------
 # Setup
