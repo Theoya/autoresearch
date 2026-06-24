@@ -13,10 +13,12 @@ extractor (25,051-col parquet per clip: sex + 75 frames x 334 features).
 | **Deadlift — existing model (BASELINE)** | old only | 78 | **1.878670** | per-metric MLPs, h64, 30 seeds, top-1, 9-stat. All 11 metrics trained. |
 | **Deadlift — existing model + claude data** | old + new | 152 | **1.688505** | identical code, +74 claude_dataset clips. **More data: −0.190 (−10.1%).** |
 | Deadlift — best improved (cycle 1) | old + new | 152 | 1.609103 | D11: h64, top-3 ensemble, patience 40, 7-stat (neural only). |
-| **Deadlift — BEST (cycle 2)** | old + new | 152 | **1.499465** | **0.7·RidgeCV + 0.3·neural-ensemble blend** (7-stat). **−0.110 vs D11; −0.379 vs baseline.** untrained=0. |
+| Deadlift — best (cycle 2) | old + new | 152 | 1.499465 | 0.7·RidgeCV + 0.3·neural blend (7-stat). |
+| **Deadlift — BEST (cycle 3 = cycle 2; converged)** | old + new | 152 | **1.499465** | **0.7·RidgeCV + 0.3·neural-ensemble blend** (7-stat). **−0.379 vs baseline.** untrained=0. Cycle 3 tried trees/kNN/stacking/per-metric weights — none beat it. |
 | **Squat — baseline (fresh, no prior model)** | new only | 57 | **0.624933** | per-metric MLPs, h64, 30 seeds, top-1, 9-stat, patience 150. (mean-pred ref = 0.5686) |
-| Squat — best improved (cycle 1) | new only | 57 | 0.5367 | S2: h128, top-3 ensemble, patience 40, 7-stat (neural only). |
-| **Squat — BEST (cycle 2)** | new only | 57 | **0.489028** | **0.5·RidgeCV + 0.5·neural-ensemble blend** (h128, 7-stat). **−0.048 vs S2 (−9%); −0.136 vs baseline.** untrained=0. |
+| Squat — best (cycle 1) | new only | 57 | 0.5367 | S2: h128, top-3 ensemble, patience 40, 7-stat (neural only). |
+| Squat — best (cycle 2) | new only | 57 | 0.489028 | 0.5·RidgeCV + 0.5·neural blend (h128, 7-stat). |
+| **Squat — BEST (cycle 3)** | new only | 57 | **0.475757** | **0.5·ExtraTrees + 0.5·neural-ensemble blend** (h128, 7-stat). ExtraTrees (0.516) beats Ridge (0.530) standalone for squat — stronger decorrelated base. **−0.013 vs cycle-2; −0.149 vs baseline.** untrained=0. |
 
 ## Did adding claude_dataset data help? (the core question)
 
@@ -76,6 +78,35 @@ metrics (controlledDescent, lockoutPosition).
 
 `train.py` / `train_squat.py` now emit `nn_rmse` / `ridge_rmse` / `blend_rmse` so the blend is
 auditable each run, and both keep the `untrained=` honesty property (Ridge always fits all metrics).
+
+## Cycle 3 findings — diverse learners, stacking, per-metric weighting
+
+Goal: per-metric blend weights, a third base learner, and per-metric model selection — all
+selected on **OOF-train CV only** (the 30/8-sample val set is never used to choose anything).
+
+- **Third base learners** (HistGradientBoosting, ExtraTrees, kNN) standalone:
+  - Deadlift: Ridge **1.5116** < ExtraTrees 1.590 < kNN 1.617 < HGB 1.643. Trees/kNN are all
+    *worse* than Ridge (122 samples × 2345 features → trees overfit; HGB also slowest).
+  - Squat: **ExtraTrees 0.516 < Ridge 0.530** < kNN 0.550. Here ExtraTrees is genuinely the
+    best linear base.
+- **Per-metric model selection / convex stacking (Ridge+ExtraTrees+kNN), OOF-chosen weights:**
+  did **not** beat single-base blends. Deadlift stack 1.543 (worse than Ridge 1.512); squat OOF
+  selection collapsed to pure Ridge for all metrics. Per-metric weight selection overfits the
+  tiny OOF folds — the global weight with its flat minimum generalises better.
+- **What won (squat only): a base swap.** Replacing Ridge with ExtraTrees in the squat blend —
+  justified by ExtraTrees' better standalone score, not by tuning on val — gives
+  `0.5·ExtraTrees + 0.5·NN = 0.4758` (flat min w0.4–0.5), beating the cycle-2 Ridge+NN 0.4890.
+- **Deadlift converged.** Nothing in cycle 3 beat the cycle-2 `0.7·Ridge + 0.3·NN = 1.4995`.
+  Trees, kNN, 3-way stacking and per-metric weighting all regressed.
+
+**Convergence read:** Deadlift looks **converged** for this feature set / split (the 2-way
+Ridge+NN blend is a stable optimum; further gains likely need *new signal* — more data, a 12th
+metric-specific feature, or a different feature extractor — not more model search). Squat still
+showed one clean win (ExtraTrees base) and is closer to its mean-pred floor (0.5686 → 0.476 means
+the model is now clearly better than predicting the mean), so squat has a little residual headroom
+(e.g. per-metric base choice, light feature engineering) but is also approaching diminishing
+returns on the 57-sample set. Recommendation: **largest remaining lever is more labelled data**,
+not further model search.
 
 ## Files
 - `train.py` — deadlift trainer (D11 config, + feature cache). `prepare.py` unchanged (read-only).

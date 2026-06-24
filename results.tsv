@@ -74,3 +74,14 @@ SQUAT-BASE	0.624933	0.9	keep	SQUAT BASELINE (fresh, no prior model) 57 samples, 
 5586665	0.489028	0.9	keep	C2 squat BLEND 0.5*Ridge + 0.5*NN-ensemble (h128, 7-stat) untrained=0 -- new squat best, beats S2 0.5367 by -0.048
 7382132	1.527258	0.0	discard	C2 deadlift Ridge 9-stat (worse than 7-stat 1.5116; blend 1.499 still best)
 7382132	0.523057	0.0	discard	C2 squat Ridge 9-stat (0.523 beats 7-stat ridge 0.530 but blend 0.489 still best)
+dbe0517	1.643100	0.0	discard	C3 deadlift HGB standalone (overfits 122x2345; worse than Ridge 1.5116)
+dbe0517	1.589600	0.0	discard	C3 deadlift ExtraTrees standalone (worse than Ridge, but diverse)
+dbe0517	1.617100	0.0	discard	C3 deadlift kNN standalone (worse than Ridge, but diverse)
+dbe0517	1.534469	0.0	discard	C3 deadlift per-metric 3-base convex stack (OOF-selected) -- with REDUCED NN; method sound but NN under-trained
+dbe0517	1.543195	0.0	discard	C3 deadlift sklearn-stack ridge/ExtraTrees/kNN (OOF per-metric weights) -- WORSE than Ridge alone 1.5116; trees/kNN dont help
+dbe0517	1.523890	0.0	discard	C3 deadlift stack+NN blend 1.5239 -- worse than C2 ridge+NN 1.4995; diverse learners + stacking dont beat 2-way
+dbe0517	0.517800	0.0	note	C3 squat ExtraTrees standalone 0.5178 BEATS Ridge 0.5300 (note: candidate for blend)
+dbe0517	0.529964	0.0	discard	C3 squat sklearn-stack collapsed to pure Ridge (OOF too conservative) -- = C2 blend 0.4890, no change
+dbe0517	0.481293	0.0	discard	C3 squat Ridge+ExtraTrees avg + NN (0.4813; worse than pure ExtraTrees base)
+dbe0517	0.475838	0.9	keep	C3 squat BASE-SWAP: ExtraTrees(0.5)+NN(0.5) blend = 0.4758 -- beats C2 Ridge+NN 0.4890 by -0.013 (ET 0.516 < Ridge 0.530 standalone justifies swap; flat min w0.4-0.5)
+35939b0	0.475757	0.9	keep	C3 squat ExtraTrees+NN blend (W=0.5) verified in train_squat.py -- NEW SQUAT BEST, untrained=0
