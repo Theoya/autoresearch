@@ -43,4 +43,5 @@ a0eb09b	0.853228	0.0	keep	weight decay 0.02 with MSE+h64
 b3e9caa	0.853437	0.0	discard	weight decay 0.03
 7cd347a	0.812270	0.0	keep	add median to aggregation (5 stats)
 30f2e4d	0.599147	0.0	keep	add q25/q75 to aggregation (7 stats)
-PENDING	1.841297	0.9	keep	jun24 BASELINE existing model on 78 old samples (GPU, 102s cap)
+9a4d1bc	1.878670	0.9	keep	jun24 BASELINE existing model on 78 old samples (cached, full training)
+9a4d1bc	1.688505	0.9	keep	jun24 deadlift OLD+NEW 152 samples (same code, +74 claude clips) -> -0.190 vs baseline, MORE DATA HELPS
