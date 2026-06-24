@@ -48,10 +48,10 @@ DROPOUT = 0.5
 LR = 1e-3
 WEIGHT_DECAY = 0.02
 MAX_EPOCHS = 5000
-PATIENCE = 100
+PATIENCE = 80
 EVAL_EVERY = 2
 BASE_SEED = 42
-NUM_SEEDS = 50   # train this many per metric
+NUM_SEEDS = 70   # train this many per metric
 TOP_K = 3       # keep best k by val loss for ensemble
 
 # ---------------------------------------------------------------------------
