@@ -108,6 +108,55 @@ the model is now clearly better than predicting the mean), so squat has a little
 returns on the 57-sample set. Recommendation: **largest remaining lever is more labelled data**,
 not further model search.
 
+## Exercise classifier (deadlift / squat / bench)
+
+3-class classifier on the same 334-feature pose vectors (7-stat temporal aggregation → 2345-dim).
+Reuses the already-extracted parquets: **74 deadlift** (`claude_*`), **57 squat**, **22 bench**
+(newly extracted, 22/22, 0 failures) — 153 clips total, all from the claude_dataset pipeline.
+
+**Eval = stratified 5-fold CV** (bench is the minority at 22 → stratified). No leakage: the
+StandardScaler is fit inside each fold (sklearn `Pipeline`). Tried LogisticRegression (C sweep),
+RandomForest, ExtraTrees, and a small MLP.
+
+| Classifier | accuracy | macro-F1 |
+|---|---:|---:|
+| **LogReg (C=0.1) — BEST** | **0.8954** | **0.8547** |
+| LogReg (C=0.3) | 0.8954 | 0.8547 |
+| LogReg (C=1.0) | 0.8889 | 0.8420 |
+| MLP (64) | 0.8366 | 0.7996 |
+| ExtraTrees (400) | 0.8235 | 0.7496 |
+| RandomForest (400) | 0.8170 | 0.7067 |
+
+**Best = LogisticRegression, C=0.1** (stronger L2 helps on 153 samples × 2345 features; flat across
+C=0.1–0.3). Linear models clearly beat trees here.
+
+Per-class (best model):
+
+| class | precision | recall | F1 | n |
+|---|---:|---:|---:|---:|
+| deadlift | 0.923 | 0.973 | 0.947 | 74 |
+| squat | 0.893 | 0.877 | 0.885 | 57 |
+| bench | 0.789 | 0.682 | 0.732 | 22 |
+
+Confusion matrix (rows = true, cols = pred):
+
+```
+           deadlift  squat  bench
+deadlift      72       2      0
+squat          3      50      4
+bench          3       4     15
+```
+
+**Honest read.** Deadlift is near-perfect (97% recall) and squat is strong (88%) — these two
+standing barbell lifts separate cleanly and, notably, are *not* heavily confused with each other
+(only 2 dl↔sq mistakes total). The real weakness is **bench (68% recall, 15/22)**: 3 benches are
+read as deadlift and 4 as squat. Two reasons: (1) bench is the minority class (22 clips → weak
+representation), and (2) the pose/DensePose features were engineered for *form scoring* of upright
+lifts, not viewpoint-invariant exercise ID of a lying-down movement, so the lying-bench geometry is
+less separable in this aggregated space. The movements are distinct enough for ~90% accuracy, but
+the "trivially separable" expectation only fully holds for deadlift; bench needs more data (or a
+bench-aware feature) to close the gap.
+
 ## Files
 - `train.py` — deadlift trainer (D11 config, + feature cache). `prepare.py` unchanged (read-only).
 - `train_squat.py` / `prepare_squat.py` — squat trainer + data prep (DATA_DIR=`claude_squat_labelled`, 10 metrics).

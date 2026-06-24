@@ -85,3 +85,8 @@ dbe0517	0.529964	0.0	discard	C3 squat sklearn-stack collapsed to pure Ridge (OOF
 dbe0517	0.481293	0.0	discard	C3 squat Ridge+ExtraTrees avg + NN (0.4813; worse than pure ExtraTrees base)
 dbe0517	0.475838	0.9	keep	C3 squat BASE-SWAP: ExtraTrees(0.5)+NN(0.5) blend = 0.4758 -- beats C2 Ridge+NN 0.4890 by -0.013 (ET 0.516 < Ridge 0.530 standalone justifies swap; flat min w0.4-0.5)
 35939b0	0.475757	0.9	keep	C3 squat ExtraTrees+NN blend (W=0.5) verified in train_squat.py -- NEW SQUAT BEST, untrained=0
+CLF-BASE	0.888889	0.0	note	CLASSIFIER LogReg C=1.0 acc=0.8889 mF1=0.8420 (3-class deadlift/squat/bench, 5-fold strat CV, 153 clips)
+CLF-BEST	0.895425	0.0	keep	CLASSIFIER LogReg C=0.1 BEST acc=0.8954 mF1=0.8547; per-class F1 dl0.947/sq0.885/bench0.732; bench(22) is hard class
+CLF-RF	0.817000	0.0	discard	CLASSIFIER RandomForest acc=0.8170 mF1=0.7067 (trees weak on 153x2345)
+CLF-ET	0.823500	0.0	discard	CLASSIFIER ExtraTrees acc=0.8235 mF1=0.7496
+CLF-MLP	0.836600	0.0	discard	CLASSIFIER MLP(64) acc=0.8366 mF1=0.7996
