@@ -45,3 +45,16 @@ b3e9caa	0.853437	0.0	discard	weight decay 0.03
 30f2e4d	0.599147	0.0	keep	add q25/q75 to aggregation (7 stats)
 9a4d1bc	1.878670	0.9	keep	jun24 BASELINE existing model on 78 old samples (cached, full training)
 9a4d1bc	1.688505	0.9	keep	jun24 deadlift OLD+NEW 152 samples (same code, +74 claude clips) -> -0.190 vs baseline, MORE DATA HELPS
+9514e34	1.643407	0.9	keep	D1 hidden_dim 128 on 152 samples (-0.045 vs old+new)
+9514e34	1.678815	0.9	discard	D2 hidden_dim 256 (worse than h128, revert)
+9514e34	1.650443	0.9	discard	D3 dropout 0.3 (worse than d0.5, revert)
+1f46743	1.601892	0.9	keep	D4 top-3 ensemble (h128) -0.042
+1f46743	1.605491	0.9	discard	D5 top-5 ensemble (worse than top-3, revert)
+1f46743	1.610936	0.9	discard	D6 weight_decay 0.01 (worse than 0.02, revert)
+67f208f	1.599599	0.9	keep	D7 7-stat aggregation (simpler, -0.002)
+d8183c6	1.567812	0.9	keep	D8 50 seeds + patience 100 (-0.032)
+ac9ef70	1.550874	0.9	discard	D9 70 seeds + patience 80 (DEGENERATE: 5 metrics trained 0/70, fell back to mean; reverted)
+7804650	1.631922	0.9	discard	D10 h64+top3+7stat (2 metrics untrained, still degenerate)
+8667407	1.609103	0.9	keep	D11 patience 40 h64 top-3 7-stat - ALL 11 train (untrained=0), HONEST best -0.079 vs old+new
+8667407	1.555389	0.9	discard	D12 60 seeds patience 40 (1 metric untrained, degenerate; revert to D11)
+SQUAT-BASE	0.624933	0.9	keep	SQUAT BASELINE (fresh, no prior model) 57 samples, h64/30seeds/patience150/top1/9stat, untrained=0

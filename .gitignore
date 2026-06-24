@@ -22,6 +22,7 @@ dev/
 # jun24 run artifacts
 .cache/
 run.log
+run_squat.log
 .env
 models/
 *.pt
