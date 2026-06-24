@@ -43,12 +43,12 @@ def load_all_data_cached():
 # Hyperparameters
 # ---------------------------------------------------------------------------
 
-HIDDEN_DIM = 128
+HIDDEN_DIM = 64
 DROPOUT = 0.5
 LR = 1e-3
 WEIGHT_DECAY = 0.02
 MAX_EPOCHS = 5000
-PATIENCE = 150
+PATIENCE = 40
 EVAL_EVERY = 2
 BASE_SEED = 42
 NUM_SEEDS = 30   # train this many per metric
