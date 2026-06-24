@@ -58,3 +58,7 @@ ac9ef70	1.550874	0.9	discard	D9 70 seeds + patience 80 (DEGENERATE: 5 metrics tr
 8667407	1.609103	0.9	keep	D11 patience 40 h64 top-3 7-stat - ALL 11 train (untrained=0), HONEST best -0.079 vs old+new
 8667407	1.555389	0.9	discard	D12 60 seeds patience 40 (1 metric untrained, degenerate; revert to D11)
 SQUAT-BASE	0.624933	0.9	keep	SQUAT BASELINE (fresh, no prior model) 57 samples, h64/30seeds/patience150/top1/9stat, untrained=0
+00d77bb	0.538188	0.9	keep	S1 squat top-3 + patience 40 + 7-stat (-0.087, untrained=0)
+6a4c645	0.536701	0.9	keep	S2 squat h128 (-0.0015, untrained=0)
+6a4c645	0.538303	0.9	discard	S3 squat weight_decay 0.05 (worse than 0.02, revert)
+6a4c645	0.574961	0.9	discard	S4 squat dropout 0.4 (worse than 0.5, revert)
