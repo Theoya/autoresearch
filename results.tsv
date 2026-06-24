@@ -72,3 +72,5 @@ SQUAT-BASE	0.624933	0.9	keep	SQUAT BASELINE (fresh, no prior model) 57 samples, 
 5586665	0.565230	0.0	discard	C2 squat Lasso (worse than Ridge)
 5586665	0.564347	0.0	discard	C2 squat ElasticNet (worse than Ridge)
 5586665	0.489028	0.9	keep	C2 squat BLEND 0.5*Ridge + 0.5*NN-ensemble (h128, 7-stat) untrained=0 -- new squat best, beats S2 0.5367 by -0.048
+7382132	1.527258	0.0	discard	C2 deadlift Ridge 9-stat (worse than 7-stat 1.5116; blend 1.499 still best)
+7382132	0.523057	0.0	discard	C2 squat Ridge 9-stat (0.523 beats 7-stat ridge 0.530 but blend 0.489 still best)
