@@ -52,7 +52,7 @@ PATIENCE = 150
 EVAL_EVERY = 2
 BASE_SEED = 42
 NUM_SEEDS = 30   # train this many per metric
-TOP_K = 1       # keep best k by val loss for ensemble
+TOP_K = 3       # keep best k by val loss for ensemble
 
 # ---------------------------------------------------------------------------
 # Model: one small MLP per metric
