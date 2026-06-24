@@ -62,3 +62,13 @@ SQUAT-BASE	0.624933	0.9	keep	SQUAT BASELINE (fresh, no prior model) 57 samples, 
 6a4c645	0.536701	0.9	keep	S2 squat h128 (-0.0015, untrained=0)
 6a4c645	0.538303	0.9	discard	S3 squat weight_decay 0.05 (worse than 0.02, revert)
 6a4c645	0.574961	0.9	discard	S4 squat dropout 0.4 (worse than 0.5, revert)
+45cd9d0	1.511618	0.0	keep	C2 per-metric Ridge (RidgeCV 5-fold, 7-stat, 152 samples) untrained=0 -- BEATS D11 1.6091 by -0.098
+45cd9d0	1.529907	0.0	discard	C2 per-metric Lasso (worse than Ridge)
+45cd9d0	1.533036	0.0	discard	C2 per-metric ElasticNet (worse than Ridge)
+45cd9d0	1.533307	0.0	discard	C2 Ridge+SelectKBest(1000/300/600/100) all worse than full Ridge (feature selection hurts)
+45cd9d0	1.510253	0.0	discard	C2 Ridge+PCA40 (1.5103 ~= full Ridge 1.5116, within noise; keep full Ridge for simplicity)
+45cd9d0	1.499465	0.9	keep	C2 BLEND 0.7*Ridge + 0.3*NN-ensemble (7-stat) untrained=0 -- new deadlift best, beats D11 1.6091 by -0.110
+5586665	0.529964	0.0	keep	C2 squat per-metric Ridge (7-stat) untrained=0 -- beats S2 0.5367 by -0.0067
+5586665	0.565230	0.0	discard	C2 squat Lasso (worse than Ridge)
+5586665	0.564347	0.0	discard	C2 squat ElasticNet (worse than Ridge)
+5586665	0.489028	0.9	keep	C2 squat BLEND 0.5*Ridge + 0.5*NN-ensemble (h128, 7-stat) untrained=0 -- new squat best, beats S2 0.5367 by -0.048

@@ -11,8 +11,10 @@ import time
 import copy
 import hashlib
 
+import numpy as np
 import torch
 import torch.nn as nn
+from sklearn.linear_model import RidgeCV
 
 from prepare_squat import (
     NUM_FRAMES, NUM_FEATURES_PER_FRAME, NUM_OUTPUTS, TIME_BUDGET,
@@ -48,6 +50,8 @@ EVAL_EVERY = 2
 BASE_SEED = 42
 NUM_SEEDS = 30   # train this many per metric
 TOP_K = 3       # keep best k by val loss for ensemble
+BLEND_W = 0.5    # final = (1-W)*Ridge + W*neural-ensemble (squat: equal blend is best)
+RIDGE_ALPHAS = np.logspace(-1, 4, 60)
 
 # ---------------------------------------------------------------------------
 # Model: one small MLP per metric
@@ -213,10 +217,32 @@ for metric_idx, metric_models in enumerate(all_models):
             seed_preds.append(model(X_val_agg))
     val_preds_per_metric.append(torch.stack(seed_preds).mean(dim=0))
 
-val_pred = torch.stack(val_preds_per_metric, dim=1)
+nn_val_pred = torch.stack(val_preds_per_metric, dim=1)
+nn_rmse = evaluate_rmse(nn_val_pred, y_val)
+
+# ---------------------------------------------------------------------------
+# Per-metric Ridge (fits instantly, all metrics honestly modelled) + blend
+# ---------------------------------------------------------------------------
+Xtr_np = X_train_agg.cpu().numpy()
+Xva_np = X_val_agg.cpu().numpy()
+ytr_np = y_train.cpu().numpy()
+ridge_models = []
+ridge_val = np.zeros((y_val.shape[0], NUM_OUTPUTS), dtype=np.float32)
+for i in range(NUM_OUTPUTS):
+    est = RidgeCV(alphas=RIDGE_ALPHAS).fit(Xtr_np, ytr_np[:, i])
+    ridge_models.append(est)
+    ridge_val[:, i] = est.predict(Xva_np)
+ridge_val_t = torch.tensor(ridge_val, device=y_val.device)
+ridge_rmse = evaluate_rmse(ridge_val_t, y_val)
+
+val_pred = (1.0 - BLEND_W) * ridge_val_t + BLEND_W * nn_val_pred
 val_rmse = evaluate_rmse(val_pred, y_val)
 
-print("\nPer-metric RMSE:")
+print(f"\nnn_rmse:    {nn_rmse:.6f}")
+print(f"ridge_rmse: {ridge_rmse:.6f}")
+print(f"blend_rmse: {val_rmse:.6f}  (W={BLEND_W})")
+
+print("\nPer-metric RMSE (blend):")
 for i, name in enumerate(METRIC_NAMES):
     metric_rmse = ((val_pred[:, i] - y_val[:, i]) ** 2).mean().sqrt().item()
     print(f"  {name:25s}: {metric_rmse:.4f}")
