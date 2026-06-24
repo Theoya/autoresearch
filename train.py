@@ -43,7 +43,7 @@ def load_all_data_cached():
 # Hyperparameters
 # ---------------------------------------------------------------------------
 
-HIDDEN_DIM = 64
+HIDDEN_DIM = 128
 DROPOUT = 0.5
 LR = 1e-3
 WEIGHT_DECAY = 0.02
