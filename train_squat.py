@@ -1,7 +1,8 @@
 """
-Deadlift form regression training script.
-Best-k ensemble of per-metric tiny MLPs — train many, keep the best.
-Usage: uv run train.py
+SQUAT form regression training script.
+Best-k ensemble of per-metric tiny MLPs - train many, keep the best.
+Mirror of train.py importing prepare_squat (10 metrics).
+Usage: uv run train_squat.py
 """
 
 import os
@@ -13,25 +14,19 @@ import hashlib
 import torch
 import torch.nn as nn
 
-from prepare import (
+from prepare_squat import (
     NUM_FRAMES, NUM_FEATURES_PER_FRAME, NUM_OUTPUTS, TIME_BUDGET,
     METRIC_NAMES, DATA_DIR, load_all_data, make_splits, normalize, evaluate_rmse,
 )
 
 
 def load_all_data_cached():
-    """Cache the (slow) raw load of X,y,ids keyed on the set of parquet files.
-
-    prepare.load_all_data() re-reads 78+ wide parquets and runs a per-frame
-    column filter that costs minutes. We cache its result to a .pt file keyed
-    on the sorted parquet filenames so repeated experiments load instantly.
-    The cache auto-invalidates when files are added/removed.
-    """
+    """Cache the raw load keyed on the set of parquet files (see train.py)."""
     files = sorted(glob.glob(os.path.join(DATA_DIR, "*.parquet")))
     key = hashlib.md5(("|".join(os.path.basename(f) for f in files)).encode()).hexdigest()[:12]
     cache_dir = os.path.join(".cache")
     os.makedirs(cache_dir, exist_ok=True)
-    cache_path = os.path.join(cache_dir, f"data_{len(files)}_{key}.pt")
+    cache_path = os.path.join(cache_dir, f"squat_{len(files)}_{key}.pt")
     if os.path.exists(cache_path):
         blob = torch.load(cache_path)
         return blob["X"], blob["y"], blob["ids"]
@@ -202,7 +197,7 @@ for metric_idx, metric_name in enumerate(METRIC_NAMES):
     print(f"  {metric_name:25s}: trained {n_trained}/{NUM_SEEDS}, kept {len(top_k)}, best_val_mse={best_loss:.4f}")
 
 # ---------------------------------------------------------------------------
-# Final evaluation — average top-k predictions
+# Final evaluation - average top-k predictions
 # ---------------------------------------------------------------------------
 
 t_end_training = time.time()
@@ -211,7 +206,6 @@ training_seconds = t_end_training - t_start_training
 val_preds_per_metric = []
 for metric_idx, metric_models in enumerate(all_models):
     if not metric_models:
-        # Fallback: predict training mean
         val_preds_per_metric.append(y_train[:, metric_idx].mean().expand(y_val.shape[0]))
         continue
     seed_preds = []

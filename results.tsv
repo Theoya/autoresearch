@@ -1,1 +1,46 @@
 commit	val_rmse	memory_gb	status	description
+c349027	1.613147	0.0	discard	baseline MLP
+b384912	1.519718	0.0	discard	11 per-metric tiny MLPs
+03a4ef4	1.492304	0.0	discard	5-seed ensemble per-metric
+c78eb4c	1.470466	0.0	discard	MSE loss instead of Huber
+f70c7e5	1.361974	0.0	discard	patience=1000 eval_every=2
+61e584c	1.329008	0.0	discard	patience=1000 eval_every=2 (fixed)
+293a741	1.225061	0.0	discard	best-k ensemble (train 8 keep top 3)
+eb4f14c	1.203087	0.0	discard	best-1 per metric (no ensemble)
+ede9a1a	1.202650	0.0	keep	Huber(delta=2.0) training loss
+74bafc5	1.199882	0.0	keep	Huber(delta=3.0) training loss
+e35874a	1.199483	0.0	keep	Huber(delta=2.5) training loss
+42b698a	1.199052	0.0	keep	AdamW with amsgrad=True
+35db570	1.138032	0.0	keep	Xavier uniform weight initialization
+95f0f64	1.134802	0.0	keep	hidden dim 48 with Xavier uniform
+dd18e97	1.126009	0.0	keep	Huber delta=3.0 with Xavier+h48
+2dd2a8e	1.117174	0.0	keep	weight decay 0.05
+bbfffb6	1.107641	0.0	keep	linear shortcut (residual) connection
+52dcd7a	1.106803	0.0	keep	WD=0.01
+c9aee73	1.104091	0.0	keep	Huber delta=2.5 with shortcut+WD0.01
+08b0982	1.329441	0.0	discard	patience=2000 (too slow; 6 metrics got 0 seeds)
+ee3ded8	1.110272	0.0	discard	L1 (MAE) loss
+b410eb6	1.133715	0.0	discard	SiLU activation instead of ReLU
+e881225	1.727682	0.0	discard	sklearn Ridge regression with LOO alpha search
+1248144	1.165593	0.0	discard	add velocity (frame diff) features
+e87fbef	1.191064	0.0	discard	reduce aggregation to mean/std only (670 features)
+ca91ab7	1.129754	0.0	discard	higher learning rate 3e-3
+b8e0227	1.120906	0.0	discard	dropout 0.3 instead of 0.5
+10d8d17	1.305091	0.0	discard	two hidden layers (48->16->1) with shortcut
+6afab0b	1.234857	0.0	discard	Gaussian noise augmentation (std=0.1)
+01502d3	0.959532	0.0	keep	12 seeds with patience=500 (faster turnover)
+bef4255	0.929570	0.0	keep	16 seeds with patience=300
+d4cc8bf	0.929268	0.0	keep	20 seeds with patience=200
+c3c41c3	0.886836	0.0	keep	30 seeds with patience=150
+29d36c7	0.962108	0.0	discard	50 seeds with patience=100
+c6bc565	0.907396	0.0	discard	40 seeds with patience=120
+bd68c3a	0.892193	0.0	discard	top-3 ensemble from 30 seeds
+486814f	1.081137	0.0	discard	hidden_dim=32 with 30 seeds
+82ee1a2	0.859473	0.0	keep	hidden_dim=64 with 30 seeds
+649a40b	0.972742	0.0	discard	hidden_dim=80 with 30 seeds
+9bad062	0.853730	0.0	keep	MSE training loss with h64 30 seeds
+a0eb09b	0.853228	0.0	keep	weight decay 0.02 with MSE+h64
+b3e9caa	0.853437	0.0	discard	weight decay 0.03
+7cd347a	0.812270	0.0	keep	add median to aggregation (5 stats)
+30f2e4d	0.599147	0.0	keep	add q25/q75 to aggregation (7 stats)
+PENDING	1.841297	0.9	keep	jun24 BASELINE existing model on 78 old samples (GPU, 102s cap)

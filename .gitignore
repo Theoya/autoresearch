@@ -18,3 +18,10 @@ AGENTS.md
 
 # Experimental code/artifacts
 dev/
+
+# jun24 run artifacts
+.cache/
+run.log
+.env
+models/
+*.pt
