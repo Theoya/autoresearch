@@ -27,7 +27,7 @@ from sklearn.metrics import (
     accuracy_score, f1_score, precision_recall_fscore_support, confusion_matrix,
 )
 
-from prepare_classifier import CLASS_NAMES, load_all_data_cached, aggregate
+from prepare_classifier import CLASS_NAMES, load_all_data_cached, aggregate, group_frame_mask
 
 SEED = 42
 N_FOLDS = 5
@@ -109,6 +109,22 @@ def main():
     print(f"BEST: {best['name']}  accuracy={best['acc']:.4f}  macro-F1={best['macro_f1']:.4f}")
     print("=" * 60)
 
+    # ----- Feature-group ablation: does MediaPipe-only classify as well as full? -----
+    # Re-run the winning model on (a) all 334, (b) MediaPipe-only (mp/limb/angle), (c) DensePose-only.
+    print("\n--- Feature-group ablation (winning model = %s) ---" % best["name"])
+    ablation = {}
+    for grp, label in [("all", "full(334)"), ("mp", "mediapipe(102)"), ("dp", "densepose(232)")]:
+        mask = group_frame_mask(grp)                       # (335,) over per-frame channels
+        Xg = aggregate(X3[:, :, mask]).numpy().astype(np.float64)
+        rg = evaluate(best["name"], Xg, y)
+        ablation[grp] = {"label": label, "feat_dim": int(Xg.shape[1]),
+                         "accuracy": round(float(rg["acc"]), 6),
+                         "macro_f1": round(float(rg["macro_f1"]), 6),
+                         "per_class_recall": {CLASS_NAMES[i]: round(float(rg["rec"][i]), 3) for i in range(3)},
+                         "confusion_matrix": rg["cm"].tolist()}
+        print(f"  {label:16s} dim={Xg.shape[1]:5d}  acc={rg['acc']:.4f}  macroF1={rg['macro_f1']:.4f}  "
+              f"bench_recall={rg['rec'][2]:.3f}")
+
     # save best model config + summary
     save_dir = os.path.join("models", "classifier")
     os.makedirs(save_dir, exist_ok=True)
@@ -131,10 +147,38 @@ def main():
                 "confusion_matrix": r["cm"].tolist(),
             } for r in results
         },
+        "feature_group_ablation": ablation,
     }
     with open(os.path.join(save_dir, "config.json"), "w") as f:
         json.dump(summary, f, indent=2)
     print(f"\nSaved summary to {save_dir}/config.json")
+
+    # ----- Persist the final artifact: winning model refit on ALL data (full 334 features) -----
+    # This is what the reusable predictor loads. Bundles scaler+clf (Pipeline) + metadata.
+    import joblib
+    final = make_clf(best["name"])
+    final.fit(X, y)
+    artifact = {
+        "pipeline": final,
+        "classes": CLASS_NAMES,
+        "model_name": best["name"],
+        "feature_group": "all",
+        "agg_stats": ["mean", "std", "min", "max", "median", "q25", "q75"],
+        "cv_accuracy": round(float(best["acc"]), 6),
+        "cv_macro_f1": round(float(best["macro_f1"]), 6),
+    }
+    joblib.dump(artifact, os.path.join(save_dir, "exercise_clf.joblib"))
+    print(f"Saved artifact to {save_dir}/exercise_clf.joblib  ({best['name']}, refit on all {len(y)} clips)")
+
+    # Also persist a MediaPipe-only artifact (pose-only, no DensePose) for the fast predictor path.
+    mask = group_frame_mask("mp")
+    Xmp = aggregate(X3[:, :, mask]).numpy().astype(np.float64)
+    final_mp = make_clf(best["name"])
+    final_mp.fit(Xmp, y)
+    artifact_mp = {**artifact, "pipeline": final_mp, "feature_group": "mp",
+                   "cv_accuracy": ablation["mp"]["accuracy"], "cv_macro_f1": ablation["mp"]["macro_f1"]}
+    joblib.dump(artifact_mp, os.path.join(save_dir, "exercise_clf_mp.joblib"))
+    print(f"Saved MediaPipe-only artifact to {save_dir}/exercise_clf_mp.joblib")
 
     print("\n---")
     print(f"accuracy:         {best['acc']:.6f}")

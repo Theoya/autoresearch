@@ -95,8 +95,39 @@ def load_all_data_cached():
     return X, y, ids
 
 
+# Feature-group prefixes (per-frame name after the f{NN}_ is stripped).
+# MediaPipe-only = mp/limb/angle (pose-derivable, no Detectron2/GPU). DensePose = cse/px (heavy/GPU).
+MP_GROUPS = ("mp_", "limb_", "angle_")
+DP_GROUPS = ("cse_", "px_")
+
+
+def frame_feature_names():
+    """Per-frame feature names (334) in the SAME column order the loader used (f01_ order)."""
+    for _, _, data_dir, pattern in SOURCES:
+        files = sorted(glob.glob(os.path.join(data_dir, pattern)))
+        if files:
+            df = pd.read_parquet(files[0])
+            return [c[4:] for c in df.columns if c.startswith("f01_")]  # strip 'f01_'
+    raise RuntimeError("no parquet files found")
+
+
+def group_frame_mask(feature_group="all"):
+    """Boolean mask over the (F+1)=335 per-frame channels. Sex (last) is always kept.
+
+    feature_group: 'all' | 'mp' (MediaPipe-only) | 'dp' (DensePose).
+    """
+    names = frame_feature_names()
+    if feature_group == "mp":
+        keep = [n.startswith(MP_GROUPS) for n in names]
+    elif feature_group == "dp":
+        keep = [n.startswith(DP_GROUPS) for n in names]
+    else:
+        keep = [True] * len(names)
+    return torch.tensor(keep + [True], dtype=torch.bool)  # +1 for sex
+
+
 def aggregate(X):
-    """(N, 75, 335) -> (N, 2345) via mean/std/min/max/median/q25/q75 across frames."""
+    """(N, 75, C) -> (N, 7*C) via mean/std/min/max/median/q25/q75 across frames."""
     parts = [X.mean(dim=1), X.std(dim=1), X.min(dim=1).values, X.max(dim=1).values,
              X.median(dim=1).values, X.quantile(0.25, dim=1), X.quantile(0.75, dim=1)]
     return torch.cat(parts, dim=1)

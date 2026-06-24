@@ -157,6 +157,33 @@ less separable in this aggregated space. The movements are distinct enough for ~
 the "trivially separable" expectation only fully holds for deadlift; bench needs more data (or a
 bench-aware feature) to close the gap.
 
+### Feature-group ablation: does MediaPipe-only classify as well as the full 334?
+
+Re-ran the winning model (LogReg C=0.1, same 5-fold stratified CV) on three feature subsets. MP-only
+= mp/limb/angle (102 feats/frame, **pose-only, no Detectron2/GPU**); DensePose-only = cse/px (232).
+
+| feature set | feats/frame | agg dim | accuracy | macro-F1 | bench recall |
+|---|---:|---:|---:|---:|---:|
+| **MediaPipe-only (mp/limb/angle)** | 102 | 721 | **0.9150** | **0.8888** | **0.818** |
+| full (MediaPipe + DensePose) | 334 | 2345 | 0.8954 | 0.8547 | 0.682 |
+| DensePose-only (cse/px) | 232 | 1631 | 0.7647 | 0.7291 | 0.636 |
+
+**MediaPipe-only is the best of the three — it beats the full set** (and DensePose-only is clearly
+worst). On only 153 samples the 232 heavy DensePose dims add noise that dilutes the clean pose
+signal; dropping them *raises* accuracy and notably lifts bench recall (.68 -> .82). **Implication:
+the classifier / `/detect-lift` predictor should run pose-only — faster (no GPU/Detectron2) AND more
+accurate.** This is specific to *classification* (the DensePose features may still help the
+form-scoring regressors, which weren't re-ablated here). The shipped predictor defaults to the
+MediaPipe-only artifact for this reason.
+
+### Reusable predictor + downstream tools
+
+`train_classifier.py` now also saves deployable artifacts: `exercise_clf_mp.joblib` (default,
+MediaPipe-only) and `exercise_clf.joblib` (full), each a fitted `StandardScaler+LogReg` Pipeline
+refit on all 153 clips plus metadata. These are copied into the clipforge labeling pipeline
+(`pipeline/detect/predict_exercise.py`) to back the `/detect-lift` skill, alongside a pose-based
+objective pre-scorer (`pipeline/prescore.py`) and a variant-detection feasibility note.
+
 ## Files
 - `train.py` — deadlift trainer (D11 config, + feature cache). `prepare.py` unchanged (read-only).
 - `train_squat.py` / `prepare_squat.py` — squat trainer + data prep (DATA_DIR=`claude_squat_labelled`, 10 metrics).
