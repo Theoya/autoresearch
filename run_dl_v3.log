@@ -1,0 +1,41 @@
+Device: cuda
+Loaded 353 samples
+Train: 283, Val: 70
+Aggregated features: 2345
+Training 30 seeds per metric, keeping top 3
+  leftFootPosition         : trained 30/30, kept 3, best_val_mse=1.4437
+  rightFootPosition        : trained 30/30, kept 3, best_val_mse=1.2521
+  grip                     : trained 30/30, kept 3, best_val_mse=1.2287
+  barPath                  : trained 30/30, kept 3, best_val_mse=1.7403
+  hipPosition              : trained 30/30, kept 3, best_val_mse=1.9009
+  spineNeutrality          : trained 30/30, kept 3, best_val_mse=2.3521
+  shoulderPosition         : trained 30/30, kept 3, best_val_mse=1.4714
+  coreBracing              : trained 30/30, kept 3, best_val_mse=1.9858
+  extensionTiming          : trained 2/30, kept 2, best_val_mse=2.3328
+  lockoutPosition          : trained 0/30, kept 0, best_val_mse=inf
+  controlledDescent        : trained 0/30, kept 0, best_val_mse=inf
+
+nn_rmse:    1.328651
+ridge_rmse: 1.337984
+blend_rmse: 1.309257  (W=0.3)
+
+Per-metric RMSE (blend):
+  leftFootPosition         : 1.1467
+  rightFootPosition        : 1.1271
+  grip                     : 1.0455
+  barPath                  : 1.2314
+  hipPosition              : 1.3155
+  spineNeutrality          : 1.5312
+  shoulderPosition         : 1.1957
+  coreBracing              : 1.3186
+  extensionTiming          : 1.5211
+  lockoutPosition          : 1.4112
+  controlledDescent        : 1.4534
+
+---
+val_rmse:         1.309257
+training_seconds: 102.0
+total_seconds:    760.4
+num_epochs:       38691
+num_params:       3966430
+best_epoch:       0
