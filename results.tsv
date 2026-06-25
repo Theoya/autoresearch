@@ -92,3 +92,4 @@ CLF-ET	0.823500	0.0	discard	CLASSIFIER ExtraTrees acc=0.8235 mF1=0.7496
 CLF-MLP	0.836600	0.0	discard	CLASSIFIER MLP(64) acc=0.8366 mF1=0.7996
 DL-V2	1.250320	0.9	keep	DEADLIFT v2 EXPANDED 360 samples (was 152): same Ridge+NN blend 1.2503 vs 1.499 (-0.249/-16.6pct). NN-only 1.193 now BEATS blend -- more data flips winner to unified NN (as unified_summary predicted).
 SQ-V2	0.599156	0.9	note	SQUAT v2 EXPANDED 247 samples (was 57): val_rmse 0.599 vs 0.476. WORSE -- but original 57 all-clean formcheck, new ~190 all-noisy kinetics; val set now 4x larger + noisier (harder, more honest test). Config stale (tuned n=57); autoresearch re-tune may recover.
+BENCH-V1	0.662099	0.9	keep	BENCH v1 FIRST REAL MODEL: 121 re-labeled clips (grounded rubric + full range). val_rmse 0.662 BEATS mean-baseline 0.766 by 13.6pct. Old labels were degenerate (all 5-6, baseline 0.24) = unbeatable mean-pred fake model; full-range re-label made bench learnable. NN0.694/ET0.790/blend0.662.

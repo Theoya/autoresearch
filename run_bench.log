@@ -1,0 +1,37 @@
+Device: cuda
+Loaded 121 samples
+Train: 103, Val: 18
+Aggregated features: 2345
+Training 30 seeds per metric, keeping top 3
+  gripWidth                : trained 30/30, kept 3, best_val_mse=0.6235
+  wristStacking            : trained 30/30, kept 3, best_val_mse=0.1797
+  elbowTuck                : trained 30/30, kept 3, best_val_mse=0.5946
+  barPath                  : trained 30/30, kept 3, best_val_mse=0.7863
+  scapularRetraction       : trained 30/30, kept 3, best_val_mse=0.7155
+  archLegDrive             : trained 30/30, kept 3, best_val_mse=0.6401
+  barTouchControl          : trained 30/30, kept 3, best_val_mse=0.3650
+  pressSymmetry            : trained 30/30, kept 3, best_val_mse=0.3217
+  lockout                  : trained 30/30, kept 3, best_val_mse=0.8449
+
+nn_rmse:    0.694179
+tree_rmse:  0.789620  (ExtraTrees base)
+blend_rmse: 0.662099  (W=0.5)
+
+Per-metric RMSE (blend):
+  gripWidth                : 0.5958
+  wristStacking            : 0.3027
+  elbowTuck                : 0.6531
+  barPath                  : 0.8962
+  scapularRetraction       : 0.7637
+  archLegDrive             : 0.7033
+  barTouchControl          : 0.6281
+  pressSymmetry            : 0.4749
+  lockout                  : 0.7557
+
+---
+val_rmse:         0.662099
+training_seconds: 53.2
+total_seconds:    274.9
+num_epochs:       20140
+num_params:       8174601
+best_epoch:       0
