@@ -90,3 +90,4 @@ CLF-BEST	0.895425	0.0	keep	CLASSIFIER LogReg C=0.1 BEST acc=0.8954 mF1=0.8547; p
 CLF-RF	0.817000	0.0	discard	CLASSIFIER RandomForest acc=0.8170 mF1=0.7067 (trees weak on 153x2345)
 CLF-ET	0.823500	0.0	discard	CLASSIFIER ExtraTrees acc=0.8235 mF1=0.7496
 CLF-MLP	0.836600	0.0	discard	CLASSIFIER MLP(64) acc=0.8366 mF1=0.7996
+DL-V2	1.250320	0.9	keep	DEADLIFT v2 EXPANDED 360 samples (was 152): same Ridge+NN blend 1.2503 vs 1.499 (-0.249/-16.6pct). NN-only 1.193 now BEATS blend -- more data flips winner to unified NN (as unified_summary predicted).
