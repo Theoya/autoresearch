@@ -1,0 +1,39 @@
+Device: cuda
+Loaded 231 samples
+Train: 197, Val: 34
+Aggregated features: 2345
+Training 30 seeds per metric, keeping top 3
+  stanceWidth              : trained 30/30, kept 3, best_val_mse=1.3493
+  squatDepth               : trained 30/30, kept 3, best_val_mse=3.9221
+  kneeTracking             : trained 30/30, kept 3, best_val_mse=1.4392
+  trunkAngle               : trained 30/30, kept 3, best_val_mse=1.4197
+  lumbarSpine              : trained 30/30, kept 3, best_val_mse=1.2324
+  thoracicPosture          : trained 30/30, kept 3, best_val_mse=1.5535
+  barPath                  : trained 30/30, kept 3, best_val_mse=1.6683
+  descentControl           : trained 30/30, kept 3, best_val_mse=1.2983
+  hipDrive                 : trained 30/30, kept 3, best_val_mse=1.2427
+  lockout                  : trained 30/30, kept 3, best_val_mse=1.0698
+
+nn_rmse:    1.218864
+tree_rmse:  1.045903  (ExtraTrees base)
+blend_rmse: 1.039447  (W=0.5)
+
+Per-metric RMSE (blend):
+  stanceWidth              : 0.9043
+  squatDepth               : 1.7228
+  kneeTracking             : 0.9111
+  trunkAngle               : 0.9508
+  lumbarSpine              : 0.9075
+  thoracicPosture          : 0.9852
+  barPath                  : 0.9921
+  descentControl           : 0.9425
+  hipDrive                 : 0.8858
+  lockout                  : 0.9129
+
+---
+val_rmse:         1.039447
+training_seconds: 85.0
+total_seconds:    498.2
+num_epochs:       34306
+num_params:       9082890
+best_epoch:       0
